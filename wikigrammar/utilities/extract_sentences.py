@@ -21,12 +21,12 @@ Options:
 """
 import logging
 import sys
-import traceback
 from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import cpu_count
 
 import docopt
 import mwapi
+from revscoring.errors import RevisionNotFound, TextDeleted
 from revscoring.extractors import api
 from revscoring.features import wikitext
 from revscoring.utilities.util import read_observations
@@ -70,13 +70,22 @@ def run(host, obs, output, workers, verbose):
 
     sentence_extractor = SentenceExtractor(extractor)
     with ProcessPoolExecutor(max_workers=workers) as executor:
-        for sentences in executor.map(sentence_extractor.extract, obs):
-            if verbose:
-                sys.stderr.write("{0}: {1}\n".format(
-                    len(sentences), "." * int(len(sentences) / 10)))
-            for sentence in sentences:
-                output.write(sentence)
-                output.write("\n")
+        for error, sentences in executor.map(sentence_extractor.extract, obs):
+            if error is None:
+                if verbose:
+                    sys.stderr.write("{0}: {1}\n".format(
+                        len(sentences), "." * int(len(sentences) / 10)))
+                for sentence in sentences:
+                    output.write(sentence)
+                    output.write("\n")
+            else:
+                if isinstance(error, RevisionNotFound) or \
+                   isinstance(error, TextDeleted):
+                    if verbose:
+                        sys.stderr.write("Deleted... \n")
+                else:
+                    sys.stderr.write(str(error))
+                    sys.stderr.write('\n')
 
 
 class SentenceExtractor:
@@ -91,10 +100,7 @@ class SentenceExtractor:
                 ob['rev_id'], wikitext.revision.datasources.sentences)
 
             # Clean them up
-            return [clean_wikitext("".join(str(t) for t in sentence))
-                    for sentence in sentences]
-        except:
-            sys.stderr.write(traceback.format_exc())
-            sys.stderr.write("\n")
-
-            return []
+            return None, [clean_wikitext("".join(str(t) for t in sentence))
+                          for sentence in sentences]
+        except Exception as e:
+            return e, []
