@@ -58,16 +58,21 @@ def main(argv=None):
     else:
         workers = int(args['--workers'])
 
-    run(host, obs, output, workers)
+    verbose = args['--verbose']
+
+    run(host, obs, output, workers, verbose)
 
 
-def run(host, obs, output, workers):
+def run(host, obs, output, workers, verbose):
     extractor = api.Extractor(mwapi.Session(
         host, user_agent="Wikigrammar sentence extractor"))
 
     sentence_extractor = SentenceExtractor(extractor)
     with ProcessPoolExecutor(max_workers=workers) as executor:
         for sentences in executor.map(sentence_extractor.extract, obs):
+            if verbose:
+                sys.stderr.write("{0}: {1}\n".format(
+                    len(sentences), "." * int(len(sentences) / 10)))
             for sentence in sentences:
                 output.write(sentence)
                 output.write("\n")
