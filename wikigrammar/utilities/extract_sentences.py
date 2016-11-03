@@ -21,6 +21,7 @@ Options:
 """
 import logging
 import sys
+import traceback
 from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import cpu_count
 
@@ -84,10 +85,16 @@ class SentenceExtractor:
         self.extractor = extractor
 
     def extract(self, ob):
-        # Extract sentences
-        sentences = self.extractor.extract(
-            ob['rev_id'], wikitext.revision.datasources.sentences)
+        try:
+            # Extract sentences
+            sentences = self.extractor.extract(
+                ob['rev_id'], wikitext.revision.datasources.sentences)
 
-        # Clean them up
-        return [clean_wikitext("".join(str(t) for t in sentence))
-                for sentence in sentences]
+            # Clean them up
+            return [clean_wikitext("".join(str(t) for t in sentence))
+                    for sentence in sentences]
+        except:
+            sys.stderr.write(traceback.format_exc())
+            sys.stderr.write("\n")
+
+            return []
