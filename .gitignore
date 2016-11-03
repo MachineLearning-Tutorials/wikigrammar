@@ -5,6 +5,10 @@ __pycache__/
 # Ad hoc demos
 demo_*.py
 
+# Datasets
+*.bz2
+*.json
+
 # Temporary text editor files
 *~
 
