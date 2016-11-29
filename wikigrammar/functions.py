@@ -1,5 +1,5 @@
 import mwparserfromhell as mwparser
-from mwparserfromhell.nodes import Wikilink
+from mwparserfromhell.nodes import Heading, Wikilink
 
 
 def clean_wikitext(sentence_text):
@@ -19,4 +19,4 @@ def _strip_wikicode(wikicode):
         if isinstance(node, Wikilink):
             stripped = stripped.split("|")[-1]
         if stripped is not None:
-            yield str(stripped)
+            yield str(stripped.strip("\n"))
