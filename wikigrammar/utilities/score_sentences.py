@@ -87,6 +87,7 @@ def run(models, obs, output, workers, verbose):
                                  [s['log_proba'] for s in scores])
                     if verbose:
                         sys.stderr.write(".")
+                        sys.stderr.flush()
             else:
                 if isinstance(error, RevisionNotFound) or \
                    isinstance(error, TextDeleted):
