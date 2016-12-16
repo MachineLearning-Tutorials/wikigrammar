@@ -89,13 +89,8 @@ def run(models, obs, output, workers, verbose):
                         sys.stderr.write(".")
                         sys.stderr.flush()
             else:
-                if isinstance(error, RevisionNotFound) or \
-                   isinstance(error, TextDeleted):
-                    if verbose:
-                        sys.stderr.write("Deleted... \n")
-                else:
-                    sys.stderr.write(str(error))
-                    sys.stderr.write('\n')
+                sys.stderr.write(str(error))
+                sys.stderr.write('\n')
 
             if verbose:
                 sys.stderr.flush()
